@@ -77,7 +77,7 @@ options.add_argument("disable-infobars")
 driver = webdriver.Chrome(options=options)
 
 
-driver.get("http://aci.customs.gov.tw/portal/Login_main")
+driver.get("")
 
 time.sleep(0.5)
 
@@ -109,7 +109,7 @@ time.sleep(0.1)
 #------------------------
 
 #ID21
-driver.get("http://aci.customs.gov.tw/APIM/ID21?opener=true&?cust_Cd=AW")
+driver.get("")
 
 
 keyboard_input = input("請輸入報單號碼\n")
@@ -163,7 +163,7 @@ Iterat_index_item_number_list = 0
 length = len(item_number_list)
 #print(length)
 
-driver.get("http://aci.customs.gov.tw/APIM/ID24?opener=true&?cust_Cd=AW")
+driver.get("")
 
 search_input = driver.find_element_by_name("declNo1")
 search_input.send_keys(application_number_field[0:2])
