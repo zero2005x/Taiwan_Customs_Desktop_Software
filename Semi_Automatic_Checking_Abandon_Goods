@@ -1,0 +1,315 @@
+from docx import Document
+
+import datetime
+
+from selenium import webdriver
+
+from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.webdriver.support import expected_conditions
+
+import time
+
+from selenium.webdriver.support.select import Select
+
+import os
+
+import pyautogui
+
+import pyperclip
+
+
+#該程式需與空白對貨報告範本放置於同一個資料夾才可以執行
+
+item_details_KGM = []
+item_details_Unit = []
+item_details_qtyUnit = []
+item_number_list = []
+
+def application_no_slash(application_no_input):
+    slash_number = application_no_input[0:2] +"/"+ application_no_input[2:4]+"/"+ application_no_input[4:6]+"/"+application_no_input[6:9] +"/" +application_no_input[9:14]
+    return slash_number
+
+
+def application_no_check(application_no_input):
+    if len(application_no_input) > 14 or len(application_no_input) < 12:
+        return False
+    else:
+        return True
+
+def application_no_convert(application_no_input):
+    if len(application_no_input) == 14:
+        return application_no_input
+    elif len(application_no_input) == 12:
+        return application_no_input[0:2] + "  " + application_no_input[2:14]
+    else:
+        return ''
+        
+        
+def application_no_transformation(application_no_input):
+    if application_no_check(application_no_input) == True:
+        return application_no_convert(application_no_input)
+    else:
+        return ''
+
+
+
+options = webdriver.ChromeOptions()
+
+prefs = {
+
+    'profile.default_content_setting_values':
+
+        {
+
+            'notifications': 2
+
+        }
+
+}
+
+options.add_experimental_option('prefs', prefs)
+
+options.add_argument("disable-infobars")  
+
+# 打啟動selenium 務必確認driver 檔案跟python 檔案要在同個資料夾中
+
+driver = webdriver.Chrome(options=options)
+
+
+driver.get("http://aci.customs.gov.tw/portal/Login_main")
+
+time.sleep(0.5)
+
+#輸入Account
+
+Account = input ("請輸入帳號\n")
+
+context = driver.find_element_by_css_selector('#userId')
+
+context.send_keys(Account)
+
+
+
+#輸入password
+
+Password = input ("請輸入帳號\n")
+
+context = driver.find_element_by_css_selector('#userPwd')
+
+context.send_keys(Password)
+
+commit = driver.find_element_by_css_selector('#loginByUserPwd')
+
+commit.click()
+time.sleep(0.1)
+
+
+
+#------------------------
+
+#ID21
+driver.get("http://aci.customs.gov.tw/APIM/ID21?opener=true&?cust_Cd=AW")
+
+
+keyboard_input = input("請輸入報單號碼\n")
+    
+application_number_field = application_no_transformation(str(keyboard_input)) 
+
+input_temp_Case_Number = input("請輸入對貨報告表的案號\n")
+input_temp_Item_Number = input("請輸入銷毀項次,輸入「z」後結束\n")
+item_number_list.append(input_temp_Item_Number)
+while input_temp_Item_Number != "z" :
+    input_temp_Item_Number = input("請輸入銷毀項次,輸入「z」後結束\n")
+    if input_temp_Item_Number != "z":
+        item_number_list.append(input_temp_Item_Number)
+
+
+
+#填寫報單號碼到欄位
+search_input = driver.find_element_by_name("declNo1")
+search_input.send_keys(application_number_field[0:2])
+
+search_input = driver.find_element_by_name("declNo2")
+search_input.send_keys(application_number_field[2:4])
+
+search_input = driver.find_element_by_name("declNo3")
+search_input.send_keys(application_number_field[4:6])
+
+search_input = driver.find_element_by_name("declNo4")
+search_input.send_keys(application_number_field[6:9])
+
+search_input = driver.find_element_by_name("declNo5")
+search_input.send_keys(application_number_field[9:14])
+
+commit = driver.find_element_by_name("btn_F6")
+commit.click()
+
+
+
+
+store_ware = ""
+while store_ware == "":
+    time.sleep(1)
+    store_ware = str(driver.execute_script("return $('#storWareCdDesc').val();"))
+    #print(store_ware)
+
+#............................................................
+
+#ID24
+
+Iterat_index_item_number_list = 0
+
+length = len(item_number_list)
+#print(length)
+
+driver.get("http://aci.customs.gov.tw/APIM/ID24?opener=true&?cust_Cd=AW")
+
+search_input = driver.find_element_by_name("declNo1")
+search_input.send_keys(application_number_field[0:2])
+
+search_input = driver.find_element_by_name("declNo2")
+search_input.send_keys(application_number_field[2:4])
+
+search_input = driver.find_element_by_name("declNo3")
+search_input.send_keys(application_number_field[4:6])
+
+search_input = driver.find_element_by_name("declNo4")
+search_input.send_keys(application_number_field[6:9])
+
+search_input = driver.find_element_by_name("itemNo")
+search_input.clear()
+search_input.send_keys(item_number_list[Iterat_index_item_number_list])
+
+search_input = driver.find_element_by_name("declNo5")
+search_input.send_keys(application_number_field[9:14])
+
+
+commit = driver.find_element_by_name("btn_F6")
+commit.click()
+
+#取得重量
+
+itemNo_temp = 0
+while Iterat_index_item_number_list < length:
+    
+    #itemNo
+    check_empty = ''
+    while check_empty == itemNo_temp or  check_empty == '':
+        check_empty = str(driver.execute_script("return $('#itemNo').val();"))
+        time.sleep(1)
+        #print(check_empty)
+
+#statQty
+#str(driver.execute_script("return $('#statQty').val();"))
+#取得單位數
+
+    check_empty = ''
+    while check_empty == '':
+        time.sleep(1)
+        check_empty = str(driver.execute_script("return $('#qty').val();"))
+        item_details_Unit.append(check_empty)
+        #print(check_empty)
+
+    check_empty = ''
+    while check_empty == '':
+        time.sleep(1)
+        select = Select(driver.find_element_by_id('qtyUnit'))
+        check_empty =str(select.first_selected_option.text)
+        item_details_qtyUnit.append(check_empty)
+        #print(check_empty)
+
+    check_empty = ''
+    while check_empty == '':
+        time.sleep(1)
+        check_empty = str(driver.execute_script("return $('#netWeight').val();"))
+        item_details_KGM.append(check_empty)
+        #print(check_empty)
+
+
+    temNo_temp = item_number_list[Iterat_index_item_number_list]
+    
+    Iterat_index_item_number_list = Iterat_index_item_number_list + 1
+
+    if Iterat_index_item_number_list != length :
+        search_input = driver.find_element_by_name("itemNo")
+        search_input.clear()
+    
+        search_input.send_keys(item_number_list[Iterat_index_item_number_list])
+
+        commit = driver.find_element_by_name("btn_F6")
+        commit.click()
+
+        time.sleep(1)
+
+doc = Document('Cargo_check_109_0333.docx')
+
+now_time = str(datetime.datetime.now())
+
+year = int(now_time[0:4])-1911
+month = str(now_time[5:7])
+day = str(now_time[8:10])
+
+
+Header_Date_Case_Number = "{}年{}月{}日第0{}號".format(year, month, day, input_temp_Case_Number)
+
+doc.paragraphs[1].text = Header_Date_Case_Number
+
+#print(doc.paragraphs[1].text)
+
+
+Header_Application_Number = "（報單號碼：{})".format(application_no_slash(application_number_field))
+
+doc.paragraphs[2].text =Header_Application_Number
+
+#print(doc.paragraphs[2].text)
+
+Case_number_paragraphs_1 = "逾期貨物或聲明放棄貨物處理記錄\n（{}）年（□滯報□滯納■逾退）（ 五 ）字第0{}號".format(year, input_temp_Case_Number)
+
+doc.tables[0].cell(0, 1).text = Case_number_paragraphs_1
+
+#print(doc.tables[0].cell(0, 1).text)
+
+
+length = len(item_number_list)
+#跳過第一項
+Iterat_index = 0
+string_qtyUnit = ""
+while Iterat_index < length:
+    if Iterat_index != length -1:
+        string_qtyUnit += "ITEM {}：{} {}\n".format(item_number_list[Iterat_index], item_details_Unit[Iterat_index], item_details_qtyUnit[Iterat_index][0:3])
+    else:
+        string_qtyUnit += "ITEM {}：{} {}".format(item_number_list[Iterat_index], item_details_Unit[Iterat_index], item_details_qtyUnit[Iterat_index][0:3])
+    Iterat_index = Iterat_index + 1
+
+
+
+doc.tables[0].cell(3, 1).text = string_qtyUnit
+
+#print(doc.tables[0].cell(3, 1).text)
+
+Iterat_index = 0
+
+str_KGM = ""
+while Iterat_index < length:
+    if Iterat_index != length -1:
+        str_KGM += "ITEM {}：{} KGM\n".format(item_number_list[Iterat_index], item_details_KGM[Iterat_index])
+    else:
+        str_KGM += "ITEM {}：{} KGM".format(item_number_list[Iterat_index], item_details_KGM[Iterat_index])
+    Iterat_index = Iterat_index + 1
+
+doc.tables[0].cell(4, 1).text = str_KGM
+
+#print(doc.tables[0].cell(4, 1).text)
+
+
+#儲存地點,storWareCdDesc,ID21
+
+doc.tables[0].cell(6, 1).text = "貨物存放____{}____庫____________間_______________區".format(store_ware[0:2])
+
+#print(doc.tables[0].cell(6, 1).text)
+
+file_name = "對貨報告{}-0{}.docx".format(year, input_temp_Case_Number)
+doc.save(file_name)
+
+print("對貨報告產生成功")
