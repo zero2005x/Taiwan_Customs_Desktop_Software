@@ -318,9 +318,9 @@ class goods_checking_document_generator():
         self.input_temp_Case_Number = input("請輸入對貨報告表的案號,共三碼\n")
         
 
-        ID = "010824"
+        ID = ""
         
-        Password = "xup6xu;4Wu/6"
+        Password = ""
 
         options = webdriver.ChromeOptions()
 
