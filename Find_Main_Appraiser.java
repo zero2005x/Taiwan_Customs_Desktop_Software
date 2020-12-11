@@ -15,8 +15,8 @@ public class Find_Main_Appraiser {
 	public int Max_Value = 0, item_number = 0;
 	public Find_Main_Appraiser(String Target) {
 		driver.get("http://aci.customs.gov.tw/portal/Login_main");
-        driver.findElement(By.name("user.userId")).sendKeys("010824");
-        driver.findElement(By.name("user.password")).sendKeys("Tim19920123" + Keys.ENTER);
+        driver.findElement(By.name("user.userId")).sendKeys("");
+        driver.findElement(By.name("user.password")).sendKeys("" + Keys.ENTER);
         String Target_URL = "http://aci.customs.gov.tw/APIM/";
         Target_URL += Target;
         Target_URL += "?opener=true&?cust_Cd=AW";
